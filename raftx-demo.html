@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Extended Raft Visualization Demo</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f8f9fa;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .diagram-section {
+      width: 100%;
+    }
+
+    .control-section {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .navigation-widget {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+
+    .step-narrative {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .step-description {
+      font-size: 14px;
+      color: #2d3a4a;
+      line-height: 1.6;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 14px;
+      cursor: pointer;
+      border: none;
+      background: #3498db;
+      color: white;
+      border-radius: 4px;
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      background: #2980b9;
+    }
+
+    button:disabled {
+      background: #bdc3c7;
+      cursor: not-allowed;
+    }
+
+    .step-topic {
+      display: block;
+      margin: 0 0 15px 0;
+      font-weight: bold;
+      font-size: 16px;
+      color: #2d3a4a;
+    }
+
+    .node-label {
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    .state-label {
+      font-size: 14px;
+      fill: #555;
+    }
+
+    .witness {
+      stroke: #e67e22;
+      fill: #f9e79f;
+    }
+
+    .message {
+      fill: #3498db;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h2 style="text-align: center; margin-top: 0;">Extended Raft Algorithm Visualization</h2>
+    <div class="diagram-section">
+      <svg id="raft-svg" width="800" height="700" style="border:1px solid #ccc; background: white;"></svg>
+    </div>
+    <div class="control-section">
+      <div class="navigation-widget">
+        <div>
+          <button id="step-backward">⟸ Backward</button>
+          <button id="step-forward">Forward ⟹</button>
+        </div>
+      </div>
+      <div class="step-narrative">
+        <span id="step-topic" class="step-topic">0. Initial State</span>
+        <div id="step-description" class="step-description">The cluster consists of two ordinary Raft servers (S1, S2) as followers with one committed entry, and one witness server (W).</div>
+      </div>
+    </div>
+  </div>
+  <script src="main.js"></script>
+</body>
+
+</html>
+
+

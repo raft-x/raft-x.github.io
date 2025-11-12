@@ -1,0 +1,485 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Extended Raft - Next-Gen Distributed Consensus</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <!-- Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary: #6366f1;
+      --primary-dark: #4f46e5;
+      --accent: #8b5cf6;
+      --bg-light: #fafafa;
+      --text-dark: #0f172a;
+      --text-medium: #475569;
+      --text-light: #64748b;
+      --border: #e2e8f0;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-light);
+      color: var(--text-dark);
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    /* Animated background */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: 
+        radial-gradient(circle at 20% 50%, rgba(99, 102, 241, 0.05) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.05) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Navigation */
+    nav {
+      padding: 24px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .logo::before {
+      content: '◆';
+      font-size: 1.2rem;
+    }
+
+    /* Hero Section */
+    .hero {
+      padding: 100px 0 120px;
+      text-align: center;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text-medium);
+      margin-bottom: 32px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+
+    .hero-badge:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.15);
+    }
+
+    .hero-badge::before {
+      content: '✨';
+    }
+
+    h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 4.5rem;
+      font-weight: 700;
+      line-height: 1.1;
+      margin-bottom: 24px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      font-size: 1.375rem;
+      color: var(--text-medium);
+      margin-bottom: 48px;
+      line-height: 1.6;
+      font-weight: 400;
+    }
+
+    .cta-group {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 16px 32px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 1rem;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white !important;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+      border-bottom: none !important;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-dark);
+      color: white !important;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
+      border-bottom: none !important;
+    }
+
+    .btn-secondary {
+      background: white;
+      color: var(--text-dark) !important;
+      border: 2px solid var(--border);
+      border-bottom: 2px solid var(--border) !important;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--primary);
+      color: var(--primary) !important;
+      border-bottom-color: var(--primary) !important;
+    }
+
+    /* Main Content */
+    .main-content {
+      background: white;
+      border-radius: 24px;
+      padding: 80px 60px;
+      margin-bottom: 60px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 2.25rem;
+      font-weight: 700;
+      margin: 80px 0 24px 0;
+      color: var(--text-dark);
+    }
+
+    h2:first-child {
+      margin-top: 0;
+    }
+
+    p {
+      line-height: 1.8;
+      color: var(--text-medium);
+      margin-bottom: 24px;
+      font-size: 1.0625rem;
+    }
+
+    /* Features Grid */
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+      margin: 48px 0;
+    }
+
+    .feature {
+      padding: 32px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #fafbff 0%, #ffffff 100%);
+      border: 1px solid var(--border);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+    }
+
+    .feature::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 16px;
+      padding: 1px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .feature:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 28px -8px rgba(99, 102, 241, 0.2);
+    }
+
+    .feature:hover::before {
+      opacity: 1;
+    }
+
+    .feature-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+      color: white;
+    }
+
+    .feature-icon i {
+      color: white;
+    }
+
+    .feature h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      color: var(--text-dark);
+      margin: 0 0 12px 0;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+
+    .feature p {
+      margin: 0;
+      font-size: 0.9375rem;
+      color: var(--text-medium);
+      line-height: 1.7;
+    }
+
+    .center {
+      text-align: center;
+    }
+
+    /* Lists */
+    ul {
+      list-style: none;
+      margin: 32px 0;
+    }
+
+    ul li {
+      padding-left: 32px;
+      margin-bottom: 16px;
+      position: relative;
+      color: var(--text-medium);
+    }
+
+    ul li::before {
+      content: '→';
+      position: absolute;
+      left: 0;
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    ul li strong {
+      color: var(--text-dark);
+      font-weight: 600;
+    }
+
+    /* Code */
+    code {
+      background: #f8fafc;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-family: 'SF Mono', 'Consolas', monospace;
+      font-size: 0.875em;
+      color: var(--primary);
+      border: 1px solid var(--border);
+    }
+
+    /* Links */
+    a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      border-bottom: 1px solid transparent;
+    }
+
+    a:hover {
+      color: var(--primary-dark);
+      border-bottom-color: var(--primary);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 2.75rem;
+      }
+
+      .subtitle {
+        font-size: 1.125rem;
+      }
+
+      .main-content {
+        padding: 48px 32px;
+      }
+
+      h2 {
+        font-size: 1.75rem;
+      }
+
+      .cta-group {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+
+    @media (max-width: 480px) {
+      h1 {
+        font-size: 2rem;
+      }
+
+      .main-content {
+        padding: 32px 24px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <nav>
+      <a href="#" class="logo">Extended Raft</a>
+    </nav>
+
+    <section class="hero">
+      <a href="https://github.com/joshuazh-x/extended-raft-paper/tree/tla/tla" target="_blank" class="hero-badge">Formal TLA+ Specification Available</a>
+      <h1>Extended Raft</h1>
+      <p class="subtitle">A Raft consensus variant with witness servers and replication subterms that reduces infrastructure costs while maintaining strong consistency</p>
+      <div class="cta-group">
+        <a href="raftx-demo.html" class="btn btn-primary">
+          <span>Explore Interactive Demo</span>
+          <span>→</span>
+        </a>
+        <a href="https://github.com/joshuazh-x/extended-raft-paper/tree/tla" target="_blank" class="btn btn-secondary">
+          <span>Read the Specification</span>
+        </a>
+      </div>
+    </section>
+
+    <main class="main-content">
+      <h2>What is Extended Raft?</h2>
+      <p>
+        Extended Raft is an enhancement to the Raft consensus algorithm that introduces <strong>witness servers</strong> and <strong>replication subterms</strong> to reduce infrastructure costs by minimizing the number of full replicas needed. This variant maintains Raft's strong consistency guarantees while enabling cost-effective deployments where running multiple full-storage servers may be prohibitively expensive.
+      </p>
+
+      <div class="features">
+        <div class="feature">
+          <div class="feature-icon"><i class="fa-solid fa-eye"></i></div>
+          <h3>Witness Servers</h3>
+          <p>Lightweight servers that participate in leader election and quorum formation without storing full log data, reducing storage overhead while maintaining consensus safety.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon"><i class="fa-solid fa-layer-group"></i></div>
+          <h3>Replication Subterms</h3>
+          <p>Fine-grained replication tracking within terms enables optimized witness interactions and more efficient replication patterns.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon"><i class="fa-solid fa-bolt"></i></div>
+          <h3>Shortcut Replication</h3>
+          <p>After initial witness acknowledgment in a subterm, subsequent entries can skip witness communication, reducing network overhead.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon"><i class="fa-solid fa-check-double"></i></div>
+          <h3>Safety Preserved</h3>
+          <p>Maintains all of Raft's core safety properties including leader election safety, log matching, and state machine safety guarantees.</p>
+        </div>
+      </div>
+
+      <h2>Key Capabilities</h2>
+      <ul>
+        <li><strong>Dynamic Replication Sets:</strong> Leaders can adjust their replication set to include witness servers when regular servers are unavailable</li>
+        <li><strong>Witness Voting Rules:</strong> Witnesses vote based on log metadata (term and subterm) rather than full log contents, enabling informed decisions with minimal storage</li>
+        <li><strong>Subquorum Requirements:</strong> Candidates must obtain votes from a subquorum of regular servers before requesting witness votes, ensuring safety</li>
+        <li><strong>Network Partition Tolerance:</strong> Maintains availability with a witness and a single regular server, even when other servers are unreachable</li>
+        <li><strong>Optimized Witness Traffic:</strong> Shortcut replication reduces redundant witness communication after the first acknowledgment in each subterm</li>
+      </ul>
+
+      <h2>Interactive Demo</h2>
+      <p>
+        Experience Extended Raft in action through our interactive visualization that walks through 36 detailed steps, demonstrating:
+      </p>
+      <ul>
+        <li>Initial leader election and log replication mechanisms</li>
+        <li>Dynamic replication set adjustment to include witness servers</li>
+        <li>Shortcut replication optimization in practice</li>
+        <li>Network partition handling and graceful recovery</li>
+        <li>Leader election with witness participation</li>
+        <li>Multiple failure scenarios and recovery patterns</li>
+      </ul>
+
+      <h2>Technical Implementation</h2>
+      <p>
+        This visualization is built with vanilla JavaScript and SVG for maximum portability and ease of understanding. The formal specification is available in TLA+ format (<code>extendedraft.tla</code>) for rigorous verification and detailed protocol analysis.
+      </p>
+
+      <h2>Research & Resources</h2>
+      <p>
+        Extended Raft builds upon the original Raft consensus algorithm described in the paper <a href="https://raft.github.io/raft.pdf" target="_blank">"In Search of an Understandable Consensus Algorithm"</a> by Diego Ongaro and John Ousterhout. This extension explores additional optimization opportunities while maintaining Raft's core principles of understandability and safety.
+      </p>
+      <p>
+        See the <a href="https://github.com/joshuazh-x/extended-raft-paper/tree/tla" target="_blank">Extended Raft specification document and formal TLA+ proof</a> for a detailed description of the algorithm, its safety proofs, and formal verification.
+      </p>
+      <p>
+        For more information about the original Raft algorithm, visit <a href="https://raft.github.io" target="_blank">raft.github.io</a>. Watch this <a href="https://www.youtube.com/watch?v=l-SlSp7Y0wE" target="_blank">KubeCon session</a> to learn how Extended Raft enables 2-node Kubernetes deployments in production environments.
+      </p>
+
+      <h2>Community & Discussions</h2>
+      <p>
+        The Extended Raft design addresses practical challenges discussed in the etcd community:
+      </p>
+      <ul>
+        <li><a href="https://github.com/etcd-io/raft/issues/133" target="_blank">etcd-io/raft#133</a> – Witness server implementation discussion and design considerations</li>
+        <li><a href="https://github.com/etcd-io/etcd/issues/20696" target="_blank">etcd-io/etcd#20696</a> – Related consensus optimization proposals and performance improvements</li>
+      </ul>
+    </main>
+  </div>
+</body>
+
+</html>
+
+
